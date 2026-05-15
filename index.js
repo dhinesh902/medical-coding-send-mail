@@ -16,7 +16,7 @@ app.use(json());
 // Configure Nodemailer Transporter for Brevo SMTP
 const transporter = createTransport({
   host: "smtp-relay.brevo.com",
-  port: 2525, 
+  port: 2525,
   secure: false,
   auth: {
     user: process.env.BREVO_LOGIN,
@@ -51,9 +51,9 @@ const handleSendMail = async (req, res) => {
     const recipientEmail =
       process.env.ADMIN_EMAIL ||
       process.env.SENDER_EMAIL ||
-      "dhineshbabu9025@gmail.com";
+      "erohealthcare026@gmail.com";
 
-    const senderEmail = process.env.SENDER_EMAIL || "dhineshbabu9025@gmail.com";
+    const senderEmail = process.env.SENDER_EMAIL || "erohealthcare026@gmail.com";
     const senderName =
       process.env.SENDER_NAME || "Ero HealthCare Innovation Private Limited";
     const fromStr = `"${senderName}" <${senderEmail}>`;
