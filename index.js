@@ -216,6 +216,21 @@ app.get("/", (req, res) => {
   );
 });
 
+// Alias route just in case the frontend misses the /api prefix
+app.post("/send-mail", (req, res) => {
+  // Redirect internally to the correct handler
+  req.url = '/api/send-mail';
+  app.handle(req, res);
+});
+
+// Catch-all 404 handler for unmatched routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route Not Found: ${req.method} ${req.originalUrl}`
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
