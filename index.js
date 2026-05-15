@@ -1,20 +1,23 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const nodemailer = require("nodemailer");
+import express, { json } from "express";
+import cors from "cors";
+import { createTransport } from "nodemailer";
+import dotenv from "dotenv";
+
+// Initialize dotenv configuration
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(json());
 
 // Configure Nodemailer Transporter for Brevo SMTP
-const transporter = nodemailer.createTransport({
+const transporter = createTransport({
   host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false, // true for 465, false for other ports
+  port: 2525, 
+  secure: false,
   auth: {
     user: process.env.BREVO_LOGIN,
     pass: process.env.BREVO_SMTP_KEY || process.env.BREVO_API_KEY,
@@ -34,7 +37,7 @@ app.get("/api/send-mail", (req, res) => {
   });
 });
 
-app.post("/api/send-mail", async (req, res) => {
+const handleSendMail = async (req, res) => {
   try {
     const { name, email, phone, course, message } = req.body;
 
@@ -174,6 +177,7 @@ app.post("/api/send-mail", async (req, res) => {
       </html>
     `;
 
+    // Send email via Nodemailer on Port 2525
     const info = await transporter.sendMail({
       from: fromStr,
       to: recipientEmail,
@@ -191,18 +195,16 @@ app.post("/api/send-mail", async (req, res) => {
   } catch (error) {
     console.error("Error sending email with Brevo:", error);
 
-    let errorMessage = "An error occurred while sending the email.";
-    if (error.message) {
-      errorMessage = error.message;
-    }
-
     return res.status(500).json({
       success: false,
-      message: errorMessage,
-      error: error,
+      message: error.message || "An error occurred while sending the email.",
+      error: error.message,
     });
   }
-});
+};
+
+app.post("/api/send-mail", handleSendMail);
+app.post("/send-mail", handleSendMail); // Alias route
 
 app.get("/health", (req, res) => {
   res
@@ -211,23 +213,14 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send(
-    "API is running properly.",
-  );
-});
-
-// Alias route just in case the frontend misses the /api prefix
-app.post("/send-mail", (req, res) => {
-  // Redirect internally to the correct handler
-  req.url = '/api/send-mail';
-  app.handle(req, res);
+  res.send("API is running properly.");
 });
 
 // Catch-all 404 handler for unmatched routes
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: `Route Not Found: ${req.method} ${req.originalUrl}`
+    message: `Route Not Found: ${req.method} ${req.originalUrl}`,
   });
 });
 

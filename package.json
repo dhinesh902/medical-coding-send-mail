@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Node.js API service to send email using Brevo",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js"
