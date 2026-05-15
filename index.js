@@ -26,11 +26,18 @@ const transporter = nodemailer.createTransport({
  * @desc Send transactional email using Brevo
  * @access Public / Private depending on configuration
  */
+app.get("/api/send-mail", (req, res) => {
+  res.status(405).json({
+    success: false,
+    message:
+      "Method Not Allowed. Please send a POST request with the required data (name, email, phone, course, message) to this endpoint.",
+  });
+});
+
 app.post("/api/send-mail", async (req, res) => {
   try {
     const { name, email, phone, course, message } = req.body;
 
-    // Validation for required contact form fields
     if (!name || !email) {
       return res.status(400).json({
         success: false,
@@ -38,19 +45,16 @@ app.post("/api/send-mail", async (req, res) => {
       });
     }
 
-    // Determine recipient email (Admin email)
     const recipientEmail =
       process.env.ADMIN_EMAIL ||
       process.env.SENDER_EMAIL ||
       "dhineshbabu9025@gmail.com";
 
-    // Format sender
     const senderEmail = process.env.SENDER_EMAIL || "dhineshbabu9025@gmail.com";
     const senderName =
       process.env.SENDER_NAME || "Ero HealthCare Innovation Private Limited";
     const fromStr = `"${senderName}" <${senderEmail}>`;
 
-    // Construct HTML content from form fields
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -170,7 +174,6 @@ app.post("/api/send-mail", async (req, res) => {
       </html>
     `;
 
-    // Send email via Nodemailer
     const info = await transporter.sendMail({
       from: fromStr,
       to: recipientEmail,
@@ -188,7 +191,6 @@ app.post("/api/send-mail", async (req, res) => {
   } catch (error) {
     console.error("Error sending email with Brevo:", error);
 
-    // Extract error message
     let errorMessage = "An error occurred while sending the email.";
     if (error.message) {
       errorMessage = error.message;
@@ -202,11 +204,16 @@ app.post("/api/send-mail", async (req, res) => {
   }
 });
 
-// Health check endpoint
 app.get("/health", (req, res) => {
   res
     .status(200)
     .json({ success: true, message: "Brevo email service is running!" });
+});
+
+app.get("/", (req, res) => {
+  res.send(
+    "API is running properly.",
+  );
 });
 
 app.listen(PORT, () => {
